@@ -38,7 +38,7 @@ describe('lazyConnect', function() {
     });
 
     ds.on('error', function(err) {
-      err.message.should.containEql('ECONNREFUSED');
+      err.message.should.match(/failed to connect to server/);
       done();
     });
   });
@@ -157,7 +157,7 @@ describe('mongodb connector', function() {
       });
       ds.ping(function(err) {
         (!!err).should.be.true;
-        err.message.should.match(/connect ECONNREFUSED/);
+        err.message.should.match(/failed to connect to server/);
         done();
       });
     });
@@ -1447,6 +1447,19 @@ describe('mongodb connector', function() {
 
     beforeEach(function(done) {
       PostWithLocation.destroyAll(done);
+    });
+
+    it('should have created 2dsphere index', function(done) {
+      geoDb.connector.db.collection('PostWithLocation').indexInformation(function(err, result) {
+        /* eslint-disable camelcase */
+        var indexes =
+        { _id_: [['_id', 1]],
+          index2dspherelocation: [['location', '2dsphere']] };
+        /* eslint-enable camelcase */
+
+        indexes.should.eql(result);
+        done(err, result);
+      });
     });
 
     it('create should convert geopoint to geojson', function(done) {
