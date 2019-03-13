@@ -22,6 +22,10 @@ config = {
       (process.env.TRAVIS_BUILD_NUMBER || process.env.BUILD_NUMBER || '1'),
 };
 
+if (process.env.MONGODB_REPLICA_SET) {
+  config.replicaSet = process.env.MONGODB_REPLICA_SET;
+}
+
 global.config = config;
 
 global.getDataSource = global.getSchema = function(customConfig) {
