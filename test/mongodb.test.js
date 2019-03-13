@@ -75,6 +75,7 @@ describe('lazyConnect', function() {
     ds.connector.execute(
       'TestLazy',
       'insertOne',
+      {},
       {value: 'test value'},
       function(err, success) {
         if (err) {
@@ -102,6 +103,7 @@ describe('lazyConnect', function() {
     ds.connector.execute(
       'TestLazy',
       'insertOne',
+      {},
       {value: 'test value'},
       function(err, success) {
         if (err) done(err);
@@ -112,7 +114,7 @@ describe('lazyConnect', function() {
         ds.connector.db.topology.isDestroyed().should.be.False();
         ds.connector.disconnect();
         ds.connector.db.topology.isDestroyed().should.be.True();
-        ds.connector.execute('TestLazy', 'findOne', {_id: id}, function(
+        ds.connector.execute('TestLazy', 'findOne', {}, {_id: id}, function(
           err,
           data
         ) {
@@ -827,8 +829,8 @@ describe('mongodb connector', function() {
       Post.create({title: 'Post2', content: 'Post2 content'}, (err2, p2) => {
         Post.create({title: 'Post3', content: 'Post3 data'}, (err3, p3) => {
           Post.find({where: {content: {$where: 'function() {return this.content.contains("content")}'}}}, (err, p) => {
-            should.not.exist(err);
-            p.length.should.be.equal(0);
+            should.exist(err);
+            err.message.should.equal('Operators "$where" are not allowed in query');
             done();
           });
         });
