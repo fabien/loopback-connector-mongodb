@@ -45,6 +45,17 @@ describe('Transactions', function() {
     });
   });
 
+  it('should work transparently - even if not supported', function() {
+    return Model.transaction(['Example'], function(tx, Example) {
+      return Example.create({name: 'Other'}, function(err, instance) {
+        instance.should.be.instanceOf(Model);
+        instance.name.should.equal('Other');
+        instance.createdAt.should.be.instanceOf(Date);
+        return tx.rollback();
+      });
+    });
+  });
+
   it('should return Transaction object', optional(function() {
     var tx = Model.getTransaction();
     tx.should.be.instanceOf(Transaction);
