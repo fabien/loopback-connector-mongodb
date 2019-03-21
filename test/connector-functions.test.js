@@ -31,3 +31,39 @@ describe('connector function - findById', function() {
     });
   });
 });
+
+describe('connector function - buildWhere', function() {
+  var db, TestAlias;
+  before(function() {
+    db = global.getDataSource();
+    TestAlias = db.define('TestAlias', {foo: {type: String}});
+  });
+
+  it('should handle: exists', function() {
+    var q = db.connector.buildWhere('TestAlias', {
+      name: {exists: true},
+    });
+    q.should.eql({name: {'$exists': true}});
+  });
+
+  it('should handle: all', function() {
+    var q = db.connector.buildWhere('TestAlias', {
+      name: {all: ['a', 'b']},
+    });
+    q.should.eql({name: {'$all': ['a', 'b']}});
+  });
+
+  it('should handle: elemMatch', function() {
+    var q = db.connector.buildWhere('TestAlias', {
+      listItems: {elemMatch: {product: 'xyz'}},
+    });
+    q.should.eql({listItems: {'$elemMatch': {product: 'xyz'}}});
+  });
+
+  it('should handle: not', function() {
+    var q = db.connector.buildWhere('TestAlias', {
+      price: {not: {gt: 1.99}},
+    });
+    q.should.eql({price: {$not: {$gt: 1.99}}});
+  });
+});
