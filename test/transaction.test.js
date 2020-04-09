@@ -59,15 +59,15 @@ describe('Transactions', function() {
   it('should return Transaction object', optional(function() {
     var tx = Model.getTransaction();
     tx.should.be.instanceOf(Transaction);
-    tx.isInTransation.should.be.false();
+    tx.isInTransaction.should.be.false();
   }));
 
   it('should rollback Transaction object', optional(function(done) {
     var tx = Model.getTransaction();
     tx.should.be.instanceOf(Transaction);
-    tx.isInTransation.should.be.false();
+    tx.isInTransaction.should.be.false();
     tx.start();
-    tx.isInTransation.should.be.true();
+    tx.isInTransaction.should.be.true();
 
     Model.create({name: 'Test'}, {transaction: tx}, function(err, instance) {
       instance.should.be.instanceOf(Model);
@@ -85,9 +85,9 @@ describe('Transactions', function() {
   it('should commit Transaction object', optional(function(done) {
     var tx = Model.getTransaction();
     tx.should.be.instanceOf(Transaction);
-    tx.isInTransation.should.be.false();
+    tx.isInTransaction.should.be.false();
     tx.start();
-    tx.isInTransation.should.be.true();
+    tx.isInTransaction.should.be.true();
 
     Model.create({name: 'Test'}, {transaction: tx}, function(err, instance) {
       instance.should.be.instanceOf(Model);
