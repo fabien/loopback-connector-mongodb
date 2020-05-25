@@ -134,7 +134,7 @@ describe('lazyConnect', function() {
 describe('mongodb connector', function() {
   before(function() {
     db = global.getDataSource({
-        enableOptimisedfindOrCreate: true
+      enableOptimisedfindOrCreate: true,
     });
 
     User = db.define(
@@ -843,6 +843,123 @@ describe('mongodb connector', function() {
           });
         });
       });
+    });
+  });
+
+  it('does allow $expr in where (1)', function(done) {
+    User.create({name: 'Al', age: 31, email: 'al@strongloop'}, (err, u1) => {
+      User.create({name: 'Simon', age: 32, email: 'simon@strongloop'}, (err2, u2) => {
+        User.create({name: 'Ray', age: 31, email: 'ray@strongloop'}, (err3, u3) => {
+          User.find({where: {expr: {gt: ['$age', 31]}}}, (err, u) => {
+            should.not.exist(err);
+            should.exist(u && u[0]);
+            u.length.should.be.equal(1);
+            u[0].email.should.be.eql('simon@strongloop');
+            done();
+          });
+        });
+      });
+    });
+  });
+
+  it('does allow $expr in where with (2)', function(done) {
+    User.create({name: 'Al', age: 31, email: 'al@strongloop'}, (err, u1) => {
+      User.create({name: 'Simon', age: 32, email: 'simon@strongloop'}, (err2, u2) => {
+        User.create({name: 'Ray', age: 31, email: 'ray@strongloop'}, (err3, u3) => {
+          User.find({where: {
+            expr: {$lt: ['$age', 32]},
+          }, order: 'name'}, (err, u) => {
+            should.not.exist(err);
+            should.exist(u && u[0]);
+            u.length.should.be.equal(2);
+            u[0].email.should.be.eql('al@strongloop');
+            u[1].email.should.be.eql('ray@strongloop');
+            done();
+          });
+        });
+      });
+    });
+  });
+
+  it('does allow $expr in complex where', function(done) {
+    User.create({name: 'Al', age: 31, email: 'al@strongloop'}, (err, u1) => {
+      User.create({name: 'Simon', age: 32, email: 'simon@strongloop'}, (err2, u2) => {
+        User.create({name: 'Ray', age: 31, email: 'ray@strongloop'}, (err3, u3) => {
+          User.find({where: {
+            expr: {gt: ['$age', 31]},
+            name: 'Ray',
+          }}, (err, u) => {
+            should.not.exist(err);
+            u.length.should.be.equal(0);
+            done();
+          });
+        });
+      });
+    });
+  });
+
+  it('does allow $expr in nested where (1)', function(done) {
+    User.create({name: 'Al', age: 31, email: 'al@strongloop'}, (err, u1) => {
+      User.create({name: 'Simon', age: 32, email: 'simon@strongloop'}, (err2, u2) => {
+        User.create({name: 'Ray', age: 31, email: 'ray@strongloop'}, (err3, u3) => {
+          User.find({where: {
+            and: [
+              {expr: {gt: ['$age', 31]}},
+              {name: 'Ray'},
+            ],
+          }}, (err, u) => {
+            should.not.exist(err);
+            u.length.should.be.equal(0);
+            done();
+          });
+        });
+      });
+    });
+  });
+
+  it('does allow $expr in nested where (2)', function(done) {
+    User.create({name: 'Al', age: 31, email: 'al@strongloop'}, (err, u1) => {
+      User.create({name: 'Simon', age: 32, email: 'simon@strongloop'}, (err2, u2) => {
+        User.create({name: 'Ray', age: 31, email: 'ray@strongloop'}, (err3, u3) => {
+          User.find({where: {
+            or: [
+              {expr: {gt: ['$age', 31]}},
+              {name: 'Ray'},
+            ],
+          }, order: 'name'}, (err, u) => {
+            should.not.exist(err);
+            should.exist(u && u[0]);
+            u.length.should.be.equal(2);
+            u[0].email.should.be.eql('ray@strongloop');
+            u[1].email.should.be.eql('simon@strongloop');
+            done();
+          });
+        });
+      });
+    });
+  });
+
+  it('should handle complex expressions', function() {
+    let discountedPrice = {
+      $cond: {
+        if: {$gte: ['$qty', 100]},
+        then: {$multiply: ['$price', 50]},
+        else: {$multiply: ['$price', 75]},
+      },
+    };
+
+    let where = {expr: {$lt: [discountedPrice, 50]}};
+
+    db.connector.buildWhere('User', where).should.be.eql({
+      $expr: {
+        $lt: [{
+          $cond: {
+            if: {$gte: ['$qty', 100]},
+            then: {$multiply: ['$price', 50]},
+            else: {$multiply: ['$price', 75]},
+          },
+        }, 50],
+      },
     });
   });
 

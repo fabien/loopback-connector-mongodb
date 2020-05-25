@@ -1,6 +1,6 @@
 {
   "name": "@atelierfabien/loopback-connector-mongodb",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "The official MongoDB connector for the LoopBack framework.",
   "engines": {
     "node": ">=6"
@@ -11,6 +11,7 @@
     "leak-detection": "make leak-detection",
     "test": "mocha",
     "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "posttest": "npm run lint"
   },
   "repository": {
