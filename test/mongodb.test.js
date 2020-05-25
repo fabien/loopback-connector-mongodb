@@ -133,7 +133,9 @@ describe('lazyConnect', function() {
 
 describe('mongodb connector', function() {
   before(function() {
-    db = global.getDataSource();
+    db = global.getDataSource({
+        enableOptimisedfindOrCreate: true
+    });
 
     User = db.define(
       'User',
@@ -701,7 +703,7 @@ describe('mongodb connector', function() {
   });
 
   it('should support Buffer type', function(done) {
-    User.create({name: 'John', icon: new Buffer('1a2')}, function(e, u) {
+    User.create({name: 'John', icon: Buffer.from('1a2')}, function(e, u) {
       User.findById(u.id, function(e, user) {
         user.icon.should.be.an.instanceOf(Buffer);
         done();
@@ -817,7 +819,7 @@ describe('mongodb connector', function() {
       Post.create({title: 'Post2', content: 'Post2 content'}, (err2, p2) => {
         Post.create({title: 'Post3', content: 'Post3 data'}, (err3, p3) => {
           Post.find(
-            {where: {$where: 'function() {return this.content.contains("content")}'}},
+            {where: {$where: 'function() {return this.content.indexOf("content") > -1}'}},
             {disableSanitization: true},
             (err, p) => {
               should.not.exist(err);
