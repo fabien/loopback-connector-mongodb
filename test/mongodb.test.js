@@ -91,6 +91,8 @@ describe('lazyConnect', function() {
   });
 
   it('should reconnect on execute when disconnected (lazyConnect = true)', function(done) {
+    if (global.config.replicaSet) return done(); // skip
+
     var ds = global.getDataSource({
       host: '127.0.0.1',
       port: global.config.port,
@@ -109,7 +111,7 @@ describe('lazyConnect', function() {
       {},
       {value: 'test value'},
       function(err, success) {
-        if (err) done(err);
+        if (err) return done(err);
         var id = success.insertedId;
         ds.connector.should.have.property('db');
         ds.connector.db.should.have.property('topology');
@@ -121,7 +123,7 @@ describe('lazyConnect', function() {
             err,
             data
           ) {
-            if (err) done(err);
+            if (err) return done(err);
             // ds.connector.db.topology.isDestroyed().should.be.False();
             done();
           });
